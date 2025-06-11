@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="bn" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইন্টারেক্টিভ পরিকল্পনা</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Visualization & Content Choices: 
+        - Initiative Overview: Goal: Inform/Organize. Method: Interactive cards (HTML/CSS/JS). Interaction: Click to scroll. Justification: Provides a high-level, scannable entry point to the main project pillars.
+        - Course Comparison: Goal: Compare. Method: Horizontal Bar Chart (Chart.js). Interaction: Static display with tooltips. Justification: Visually represents the market demand for different IT skills mentioned in the report.
+        - Pros/Cons Analysis: Goal: Inform/Compare. Method: Accordions (HTML/CSS/JS). Interaction: Click to expand/collapse. Justification: Hides detailed text, reducing initial cognitive load and allowing users to explore topics of interest.
+        - Implementation Timeline: Goal: Show Change/Process. Method: Interactive vertical timeline (HTML/CSS/JS). Interaction: Click on a phase to see details. Justification: Effectively visualizes the 2-year project plan in digestible steps, making it easier to understand the sequence of actions.
+        - Modernization Plans: Goal: Organize. Method: Tabbed interface (HTML/CSS/JS). Interaction: Click to switch tabs. Justification: Neatly organizes the modernization plans for different business units (Park, Restaurant, Guest House) in one compact area.
+    -->
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: #F8F7F4;
+            color: #3D405B;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #E07A5F;
+            border-bottom-color: #E07A5F;
+        }
+        .card-hover-effect {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-btn.active {
+            background-color: #81B29A;
+            color: #F4F1DE;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -31.5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #F4F1DE;
+            border: 4px solid #81B29A;
+            z-index: 1;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .timeline-item.active::before {
+             background-color: #E07A5F;
+             border-color: #E07A5F;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#F8F7F4] text-[#3D405B]">
+
+    <header class="bg-[#F4F1DE]/80 backdrop-blur-sm sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl md:text-2xl font-bold text-[#3D405B]">আইটি বিষয়ক প্রস্তাবনা</h1>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#initiatives" class="nav-link border-b-2 border-transparent pb-1">উদ্যোগসমূহ</a>
+                    <a href="#timeline" class="nav-link border-b-2 border-transparent pb-1">পরিকল্পনা বাস্তবায়ন</a>
+                    <a href="#courses" class="nav-link border-b-2 border-transparent pb-1">আইটি প্রশিক্ষণ</a>
+                    <a href="#modernization" class="nav-link border-b-2 border-transparent pb-1">আধুনিকায়ন</a>
+                    <a href="#future" class="nav-link border-b-2 border-transparent pb-1">টেকনোলজি হাব</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-[#3D405B] focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4">
+                <a href="#initiatives" class="block py-2 text-center nav-link">উদ্যোগসমূহ</a>
+                <a href="#timeline" class="block py-2 text-center nav-link">পরিকল্পনা বাস্তবায়ন</a>
+                <a href="#courses" class="block py-2 text-center nav-link">আইটি প্রশিক্ষণ</a>
+                <a href="#modernization" class="block py-2 text-center nav-link">আধুনিকায়ন</a>
+                <a href="#future" class="block py-2 text-center nav-link">টেকনোলজি হাব</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="initiatives" class="mb-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-10">প্রধান উদ্যোগসমূহ</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-[#F4F1DE] p-6 rounded-xl shadow-lg card-hover-effect cursor-pointer" onclick="document.getElementById('courses').scrollIntoView();">
+                    <h4 class="text-xl font-semibold mb-2 text-[#81B29A]">আইটি প্রশিক্ষণ কেন্দ্র</h4>
+                    <p class="text-sm text-[#3D405B]/80">স্থানীয় তরুণ-তরুণীদের জন্য ওয়েব ডেভেলপমেন্ট, ডিজিটাল মার্কেটিং, গ্রাফিক্স ডিজাইন সহ যুগোপযোগী বিভিন্ন কোর্সের মাধ্যমে দক্ষতা উন্নয়ন।</p>
+                </div>
+                <div class="bg-[#F4F1DE] p-6 rounded-xl shadow-lg card-hover-effect cursor-pointer" onclick="document.getElementById('modernization').scrollIntoView();">
+                    <h4 class="text-xl font-semibold mb-2 text-[#81B29A]">ব্যবসার আধুনিকায়ন</h4>
+                    <p class="text-sm text-[#3D405B]/80">অ্যামিউজমেন্ট পার্ক, রেস্তোরাঁ ও গেস্ট হাউজে অনলাইন টিকেটিং, ডিজিটাল মেন্যু এবং স্মার্ট প্রযুক্তির সমন্বয়ে গ্রাহক সেবার মান বৃদ্ধি।</p>
+                </div>
+                <div class="bg-[#F4F1DE] p-6 rounded-xl shadow-lg card-hover-effect cursor-pointer" onclick="document.getElementById('future').scrollIntoView();">
+                     <h4 class="text-xl font-semibold mb-2 text-[#81B29A]">টেকনোলজি হাব</h4>
+                    <p class="text-sm text-[#3D405B]/80">ভবিষ্যতে একটি পূর্ণাঙ্গ টেক হাব প্রতিষ্ঠা, যেখানে থাকবে প্রোডাক্ট সেলস, সার্ভিস সেন্টার, কো-ওয়ার্কিং স্পেস এবং ইনোভেশন ল্যাব।</p>
+                </div>
+                 <div class="bg-[#F4F1DE] p-6 rounded-xl shadow-lg card-hover-effect cursor-pointer" onclick="document.getElementById('courses').scrollIntoView({ block: 'center' });">
+                    <h4 class="text-xl font-semibold mb-2 text-[#81B29A]">IELTS ও ভাষা শিক্ষা</h4>
+                    <p class="text-sm text-[#3D405B]/80">আন্তর্জাতিক মানের IELTS প্রস্তুতি এবং প্রফেশনাল কমিউনিকেশন স্কিলস ডেভেলপমেন্টের জন্য বিশেষায়িত কেন্দ্র স্থাপন।</p>
+                </div>
+                <div class="bg-[#F4F1DE] p-6 rounded-xl shadow-lg card-hover-effect cursor-pointer" onclick="document.getElementById('courses').scrollIntoView({ block: 'end' });">
+                    <h4 class="text-xl font-semibold mb-2 text-[#81B29A]">ফ্রিল্যান্সিং ও ক্যারিয়ার</h4>
+                    <p class="text-sm text-[#3D405B]/80">প্রশিক্ষণ শেষে শিক্ষার্থীদের ফ্রিল্যান্সিং মার্কেটে কাজ পেতে সহায়তা এবং ইন্টার্নশিপ প্রোগ্রামের মাধ্যমে বাস্তব অভিজ্ঞতা প্রদান।</p>
+                </div>
+                <div class="bg-[#F4F1DE] p-6 rounded-xl shadow-lg card-hover-effect cursor-pointer" onclick="document.getElementById('modernization').scrollIntoView({ block: 'center' });">
+                    <h4 class="text-xl font-semibold mb-2 text-[#81B29A]">শিক্ষা প্রতিষ্ঠানের উন্নয়ন</h4>
+                    <p class="text-sm text-[#3D405B]/80">স্মার্ট ক্লাসরুম, ম্যানেজমেন্ট সফটওয়্যার এবং ডিজিটাল রিসোর্স সেন্টার স্থাপনের মাধ্যমে অধিভুক্ত শিক্ষা প্রতিষ্ঠানগুলোর আধুনিকায়ন।</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="timeline" class="mb-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-12">বাস্তবায়ন পরিকল্পনা (২ বছর)</h3>
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="w-full md:w-1/3 mb-8 md:mb-0">
+                    <div id="timeline-nav" class="space-y-2">
+                    </div>
+                </div>
+                <div class="w-full md:w-2/3 md:pl-10">
+                    <div id="timeline-details" class="bg-[#F4F1DE] p-6 rounded-xl shadow-lg min-h-[200px]">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="courses" class="mb-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-10">আইটি প্রশিক্ষণ কেন্দ্র: প্রস্তাবিত কোর্সসমূহ</h3>
+            <p class="text-center max-w-3xl mx-auto mb-10 text-[#3D405B]/80">
+                স্থানীয় বাজারের চাহিদা এবং বৈশ্বিক প্রেক্ষাপট বিবেচনা করে বিভিন্ন যুগোপযোগী কোর্স ডিজাইন করা হয়েছে। প্রতিটি কোর্সের বিস্তারিত জানতে শিরোনামে ক্লিক করুন।
+            </p>
+            <div class="chart-container mb-12">
+                <canvas id="courseDemandChart"></canvas>
+            </div>
+            <div id="course-accordion" class="space-y-4">
+            </div>
+        </section>
+        
+        <section id="modernization" class="mb-20">
+            <h3 class="text-2xl md:text-3xl font-bold text-center mb-10">বিদ্যমান ব্যবসার আধুনিকায়ন</h3>
+             <p class="text-center max-w-3xl mx-auto mb-10 text-[#3D405B]/80">
+                পার্ক, রেস্তোরাঁ ও গেস্ট হাউজে আধুনিক প্রযুক্তি যুক্ত করে গ্রাহকদের অভিজ্ঞতা উন্নত করা এবং পরিচালন দক্ষতা বৃদ্ধি করা এই উদ্যোগের অন্যতম লক্ষ্য।
+            </p>
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="mb-4 flex space-x-2 md:space-x-4 p-1 bg-[#F4F1DE] rounded-xl">
+                    <button class="tab-btn flex-1 py-2 px-4 rounded-lg transition" data-tab="park">অ্যামিউজমেন্ট পার্ক</button>
+                    <button class="tab-btn flex-1 py-2 px-4 rounded-lg transition" data-tab="restaurant">রেস্তোরাঁ</button>
+                    <button class="tab-btn flex-1 py-2 px-4 rounded-lg transition" data-tab="guesthouse">গেস্ট হাউজ</button>
+                </div>
+                <div id="modernization-content" class="bg-white p-6 rounded-xl shadow-lg">
+                </div>
+            </div>
+        </section>
+        
+        <section id="future" class="text-center">
+            <h3 class="text-2xl md:text-3xl font-bold mb-4 text-[#3D405B]">ভবিষ্যৎ পরিকল্পনা: একটি পূর্ণাঙ্গ টেকনোলজি হাব</h3>
+            <p class="text-lg max-w-3xl mx-auto mb-10 text-[#3D405B]/80">
+                এই উদ্যোগের চূড়ান্ত লক্ষ্য হলো কুষ্টিয়ায় একটি স্বয়ংসম্পূর্ণ টেকনোলজি হাব তৈরি করা। এটি হবে প্রযুক্তিপ্রেমী, শিক্ষার্থী ও উদ্যোক্তাদের জন্য এক ছাদের নিচে সব সমাধানের একটি মিলনকেন্দ্র।
+            </p>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto">
+                <div class="bg-[#81B29A] text-white p-4 rounded-xl flex flex-col items-center justify-center aspect-square card-hover-effect">
+                    <span class="text-3xl mb-2">🛍️</span>
+                    <h5 class="font-semibold text-center">প্রোডাক্ট বিক্রয় কেন্দ্র</h5>
+                </div>
+                <div class="bg-[#81B29A] text-white p-4 rounded-xl flex flex-col items-center justify-center aspect-square card-hover-effect">
+                    <span class="text-3xl mb-2">🔧</span>
+                    <h5 class="font-semibold text-center">সার্ভিস সেন্টার</h5>
+                </div>
+                <div class="bg-[#81B29A] text-white p-4 rounded-xl flex flex-col items-center justify-center aspect-square card-hover-effect">
+                    <span class="text-3xl mb-2">💼</span>
+                    <h5 class="font-semibold text-center">কো-ওয়ার্কিং স্পেস</h5>
+                </div>
+                <div class="bg-[#81B29A] text-white p-4 rounded-xl flex flex-col items-center justify-center aspect-square card-hover-effect">
+                    <span class="text-3xl mb-2">💡</span>
+                    <h5 class="font-semibold text-center">ইনোভেশন ল্যাব</h5>
+                </div>
+                <div class="bg-[#81B29A] text-white p-4 rounded-xl flex flex-col items-center justify-center aspect-square card-hover-effect">
+                    <span class="text-3xl mb-2">🗓️</span>
+                    <h5 class="font-semibold text-center">টেক ইভেন্টস</h5>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-[#F4F1DE] mt-20 py-6">
+        <div class="container mx-auto text-center text-[#3D405B]/70">
+            <p>&copy; ২০২৫ | আইটি উদ্যোগ | কুষ্টিয়া, বাংলাদেশ</p>
+            <p class="text-xs mt-1">একটি ইন্টারেক্টিভ পরিকল্পনা, আপনার সদয় বিবেচনার জন্য উপস্থাপিত।</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const menuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if(!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            const sections = document.querySelectorAll('main section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-30% 0px -70% 0px' });
+
+            sections.forEach(section => observer.observe(section));
+
+
+            const timelineData = [
+                {
+                    phase: "প্রথম ৬ মাস",
+                    title: "ভিত্তি স্থাপন ও প্রস্তুতি",
+                    details: "এই পর্যায়ে প্রকল্পের ফিজিবিলিটি স্টাডি, চূড়ান্ত পরিকল্পনা, বাজেট প্রণয়ন, এবং আইনি কাঠামো তৈরির উপর গুরুত্ব দেওয়া হবে। ভবন সংস্কারের কাজ শুরু হবে এবং প্রশিক্ষক নিয়োগ প্রক্রিয়া শুরু হবে।"
+                },
+                {
+                    phase: "৭-১২ মাস",
+                    title: "প্রাথমিক কার্যক্রম শুরু",
+                    details: "আইটি ও IELTS প্রশিক্ষণ কেন্দ্রের প্রথম ব্যাচ চালু করা হবে। ব্যবসার আধুনিকায়নের পাইলট প্রজেক্ট (যেমন: অনলাইন টিকেটিং) শুরু হবে এবং ইন্টার্নশিপ প্রোগ্রামের জন্য চুক্তি স্বাক্ষর করা হবে।"
+                },
+                {
+                    phase: "১৩-১৮ মাস",
+                    title: "পূর্ণাঙ্গ আধুনিকায়ন",
+                    details: "অ্যাডভান্সড কোর্স চালু করার প্রস্তুতি নেওয়া হবে এবং ব্যবসার আধুনিকায়ন পূর্ণদ্যোমে চলবে। শিক্ষা প্রতিষ্ঠানগুলোতে স্মার্ট ক্লাসরুম ও সফটওয়্যার বাস্তবায়নের কাজ শুরু হবে।"
+                },
+                {
+                    phase: "১৯-২৪ মাস",
+                    title: "টেক হাবের সূচনা",
+                    details: "টেকনোলজি হাবের বিক্রয় ও সার্ভিস সেন্টার আনুষ্ঠানিকভাবে উদ্বোধন করা হবে। বিগত কার্যক্রম মূল্যায়ন করে পরবর্তী ৩-৫ বছরের জন্য নতুন পরিকল্পনা গ্রহণ করা হবে।"
+                }
+            ];
+            
+            const timelineNav = document.getElementById('timeline-nav');
+            const timelineDetailsContainer = document.getElementById('timeline-details');
+
+            timelineData.forEach((item, index) => {
+                const navItem = document.createElement('div');
+                navItem.className = `timeline-item relative pl-8 py-2 cursor-pointer border-l-4 border-[#81B29A]`;
+                navItem.dataset.index = index;
+                navItem.innerHTML = `<h5 class="font-semibold">${item.phase}</h5><p class="text-sm text-gray-600">${item.title}</p>`;
+                timelineNav.appendChild(navItem);
+            });
+
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            
+            function updateTimeline(index) {
+                timelineItems.forEach((item, i) => {
+                    item.classList.toggle('active', i == index);
+                });
+                const data = timelineData[index];
+                timelineDetailsContainer.innerHTML = `
+                    <h4 class="text-xl font-bold text-[#3D405B] mb-2">${data.phase}: ${data.title}</h4>
+                    <p class="text-[#3D405B]/80">${data.details}</p>
+                `;
+            }
+
+            timelineNav.addEventListener('click', (e) => {
+                const target = e.target.closest('.timeline-item');
+                if (target) {
+                    updateTimeline(target.dataset.index);
+                }
+            });
+
+            updateTimeline(0);
+
+
+            const courseData = [
+                {
+                    title: "ওয়েব ডেভেলপমেন্ট",
+                    demand: 95,
+                    description: "আধুনিক ওয়েবসাইট ও ওয়েব অ্যাপ্লিকেশন তৈরির জন্য ফ্রন্ট-এন্ড (HTML, CSS, JavaScript, React) এবং ব্যাক-এন্ড (Node.js, PHP, ASP.NET Core) প্রযুক্তি।",
+                    pros: ["উচ্চ চাহিদা", "ফ্রিল্যান্সিং এ ব্যাপক সুযোগ", "ভালো আয়ের সম্ভাবনা"],
+                    cons: ["দ্রুত পরিবর্তনশীল প্রযুক্তি", "উচ্চ প্রতিযোগিতা", "অনুশীলন প্রয়োজন"],
+                    solution: "আপডেটেড কারিকুলাম, বাস্তব প্রজেক্টে কাজ এবং মেন্টরশিপের মাধ্যমে শিক্ষার্থীদের প্রস্তুত করা।"
+                },
+                {
+                    title: "গ্রাফিক্স ও ভিডিও এডিটিং",
+                    demand: 85,
+                    description: "লোগো, ব্যানার, বিজ্ঞাপন, সোশ্যাল মিডিয়া কনটেন্ট এবং ভিডিও সম্পাদনার জন্য Adobe Photoshop, Illustrator, Premiere Pro-এর মতো সফটওয়্যার।",
+                    pros: ["সৃজনশীল কাজের সুযোগ", "ফ্রিল্যান্সিং এ জনপ্রিয়", "বিভিন্ন শিল্পে চাহিদা"],
+                    cons: ["সৃজনশীলতার চাপ", "ব্যয়বহুল সফটওয়্যার", "ক্লায়েন্টের চাহিদা বোঝা"],
+                    solution: "পোর্টফোলিও তৈরিতে সহায়তা, ওপেন-সোর্স টুলস শেখানো এবং সফট-স্কিলস ডেভেলপমেন্ট।"
+                },
+                {
+                    title: "ডিজিটাল মার্কেটিং",
+                    demand: 90,
+                    description: "অনলাইন প্ল্যাটফর্মে পণ্য বা সেবার প্রচারের জন্য SEO, SMM, ইমেইল মার্কেটিং, কনটেন্ট মার্কেটিং ইত্যাদি কৌশল।",
+                    pros: ["ব্যাপক চাহিদা", "কম বিনিয়োগে প্রচার", "ফলাফল পরিমাপযোগ্য"],
+                    cons: ["অ্যালগরিদম পরিবর্তনশীল", "তীব্র প্রতিযোগিতা", "ফলাফল পেতে সময়সাপেক্ষ"],
+                    solution: "লাইভ ক্যাম্পেইন অনুশীলন, আপ-টু-ডেট থাকা এবং ডেটা অ্যানালাইসিস শেখানো।"
+                },
+                {
+                    title: "AI ও মেশিন লার্নিং",
+                    demand: 75,
+                    description: "ভবিষ্যতের প্রযুক্তি যেমন ডেটা অ্যানালাইসিস, প্যাটার্ন রিকগনিশন ও অটোমেশনের মৌলিক ধারণা প্রদান।",
+                    pros: ["ভবিষ্যৎমুখী", "উচ্চ বেতনের চাকরি", "গবেষণার সুযোগ"],
+                    cons: ["জটিল বিষয়", "অভিজ্ঞ প্রশিক্ষকের অভাব", "উচ্চ ক্ষমতার পিসি প্রয়োজন"],
+                    solution: "সহজবোধ্য কারিকুলাম, ক্লাউড কম্পিউটিং ব্যবহার এবং বাস্তব সমস্যার সমাধানে প্রজেক্ট।"
+                },
+                {
+                    title: "মোবাইল অ্যাপ ডেভেলপমেন্ট",
+                    demand: 80,
+                    description: "অ্যান্ড্রয়েড ও আইওএস প্ল্যাটফর্মের জন্য মোবাইল অ্যাপ তৈরির কৌশল, যেমনঃ ফ্লাটার বা রিয়েক্ট নেটিভ।",
+                    pros: ["ক্রমবর্ধমান বাজার", "গ্লোবাল মার্কেটে সুযোগ", "উদ্ভাবনী কাজের সুযোগ"],
+                    cons: ["বিভিন্ন প্ল্যাটফর্মের জটিলতা", "অ্যাপ মার্কেটিং চ্যালেঞ্জিং", "নিয়মিত আপডেট প্রয়োজন"],
+                    solution: "ক্রস-প্ল্যাটফর্ম ডেভেলপমেন্টে গুরুত্ব দেওয়া, ASO এবং মার্কেটিং কৌশল শেখানো।"
+                }
+            ];
+
+            const courseAccordion = document.getElementById('course-accordion');
+            courseData.forEach(course => {
+                const item = document.createElement('div');
+                item.className = 'border border-gray-200 rounded-lg overflow-hidden bg-white';
+                item.innerHTML = `
+                    <button class="accordion-btn w-full text-left p-4 flex justify-between items-center bg-[#F4F1DE] hover:bg-[#E0E0CE] transition">
+                        <span class="font-semibold text-lg">${course.title}</span>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content p-4 bg-white">
+                        <p class="mb-4">${course.description}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <h5 class="font-semibold text-green-600 mb-2">সুবিধা</h5>
+                                <ul class="list-disc list-inside text-sm space-y-1">
+                                    ${course.pros.map(p => `<li>${p}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-red-600 mb-2">অসুবিধা</h5>
+                                <ul class="list-disc list-inside text-sm space-y-1">
+                                    ${course.cons.map(c => `<li>${c}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-blue-600 mb-2">উত্তরণের উপায়</h5>
+                                <p class="text-sm">${course.solution}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                courseAccordion.appendChild(item);
+            });
+
+            courseAccordion.addEventListener('click', (e) => {
+                const btn = e.target.closest('.accordion-btn');
+                if (btn) {
+                    const content = btn.nextElementSibling;
+                    const icon = btn.querySelector('span:last-child');
+                    
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        document.querySelectorAll('.accordion-content').forEach(el => {
+                            el.style.maxHeight = null;
+                            el.previousElementSibling.querySelector('span:last-child').style.transform = 'rotate(0deg)';
+                        });
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                }
+            });
+
+
+            const ctx = document.getElementById('courseDemandChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: courseData.map(c => c.title),
+                    datasets: [{
+                        label: 'কোর্সের আপেক্ষিক চাহিদা',
+                        data: courseData.map(c => c.demand),
+                        backgroundColor: [
+                            'rgba(129, 178, 154, 0.6)',
+                            'rgba(224, 122, 95, 0.6)',
+                            'rgba(61, 64, 91, 0.6)',
+                            'rgba(244, 241, 222, 0.8)',
+                            'rgba(94, 139, 157, 0.6)'
+                        ],
+                        borderColor: [
+                            '#81B29A',
+                            '#E07A5F',
+                            '#3D405B',
+                            '#F2CC8F',
+                            '#5E8B9D'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'বিভিন্ন আইটি কোর্সের তুলনামূলক বাজার চাহিদা',
+                            font: { size: 16, family: "'Hind Siliguri', sans-serif" }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            const modernizationData = {
+                park: [
+                    { title: "অনলাইন টিকেটিং", icon: "🎟️", desc: "ওয়েব ও অ্যাপের মাধ্যমে প্রবেশ এবং রাইডের টিকেট কেনার সুবিধা। কাউন্টারের ভিড় কমিয়ে গ্রাহক অভিজ্ঞতা উন্নত করবে।" },
+                    { title: "AR/VR গেমস", icon: "🎮", desc: "পার্কে নতুন আকর্ষণ হিসেবে অগমেন্টেড ও ভার্চুয়াল রিয়েলিটি গেম জোন স্থাপন, যা তরুণ প্রজন্মকে বিশেষভাবে আকৃষ্ট করবে।" },
+                    { title: "স্মার্ট পার্কিং", icon: "🅿️", desc: "অ্যাপের মাধ্যমে পার্কিং স্লট খোঁজা ও বুকিং দেওয়ার ব্যবস্থা, যা সময় বাঁচাবে এবং শৃঙ্খলা আনবে।" },
+                    { title: "নিরাপত্তা আধুনিকায়ন", icon: "📹", desc: "উচ্চ ক্ষমতাসম্পন্ন CCTV ও প্রয়োজনে ড্রোনের মাধ্যমে পুরো পার্কের নিরাপত্তা ব্যবস্থা জোরদার করা।" }
+                ],
+                restaurant: [
+                    { title: "QR কোড অর্ডারিং", icon: "📱", desc: "প্রতি টেবিলে QR কোড স্ক্যান করে ডিজিটাল মেন্যু দেখা ও খাবার অর্ডার করার সুবিধা, যা ওয়েটারের চাপ কমাবে।" },
+                    { title: "কিচেন অটোমেশন (KDS)", icon: "🍳", desc: "অর্ডার সরাসরি রান্নাঘরের স্ক্রিনে প্রদর্শিত হবে, যা অর্ডার প্রক্রিয়াকরণ দ্রুত ও নির্ভুল করবে।" },
+                    { title: "অনলাইন ডেলিভারি", icon: "🛵", desc: "নিজস্ব অ্যাপ বা থার্ড-পার্টি প্ল্যাটফর্মের মাধ্যমে হোম ডেলিভারি ও টেকঅ্যাওয়ে সেবা প্রদান।" },
+                    { title: "ডিজিটাল ফিডব্যাক", icon: "⭐", desc: "খাবারের পর ট্যাবলেটে বা অ্যাপের মাধ্যমে গ্রাহকদের কাছ থেকে তাৎক্ষণিক মতামত সংগ্রহ করে সেবার মান উন্নয়ন।" }
+                ],
+                guesthouse: [
+                    { title: "অনলাইন বুকিং সিস্টেম", icon: "🏨", desc: "ওয়েবসাইট ও OTA প্ল্যাটফর্মের (Booking.com) মাধ্যমে বিশ্বব্যাপী গ্রাহকদের জন্য ২৪/৭ রুম বুকিং এর সুবিধা।" },
+                    { title: "স্মার্ট রুম টেকনোলজি", icon: "💡", desc: "ভয়েস অ্যাসিস্ট্যান্ট, স্মার্ট লাইটিং ও কী-লেস এন্ট্রির মতো IoT-ভিত্তিক প্রযুক্তির মাধ্যমে গ্রাহকদের আধুনিক অভিজ্ঞতা প্রদান।" },
+                    { title: "ভার্চুয়াল ট্যুর", icon: "🌐", desc: "বুকিং এর আগে গ্রাহকদের জন্য রুম ও অন্যান্য সুবিধার ৩৬০-ডিগ্রি ভার্চুয়াল ট্যুর দেখার সুযোগ।" },
+                    { title: "CRM সফটওয়্যার", icon: "👥", desc: "গ্রাহকদের তথ্য ও পছন্দ সংরক্ষণ করে ব্যক্তিগতকৃত সেবা ও অফার প্রদানের মাধ্যমে দীর্ঘমেয়াদী সম্পর্ক স্থাপন।" }
+                ]
+            };
+            
+            const modernizationContent = document.getElementById('modernization-content');
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            
+            function updateModernizationContent(tab) {
+                const data = modernizationData[tab];
+                modernizationContent.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        ${data.map(item => `
+                            <div class="flex items-start space-x-4">
+                                <div class="text-4xl">${item.icon}</div>
+                                <div>
+                                    <h5 class="font-semibold text-lg">${item.title}</h5>
+                                    <p class="text-sm text-gray-600">${item.desc}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                tabButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tab);
+                });
+            }
+
+            document.querySelector('.tab-btn[data-tab="park"]').classList.add('active');
+            updateModernizationContent('park');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateModernizationContent(button.dataset.tab);
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
